@@ -1,0 +1,394 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Quiz An toàn Bảo mật</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: một cột hẹp, thẻ câu hỏi ở giữa, màn hình chọn chế độ / làm bài / kết quả */
+:root {
+  --bg: #eef2f5;
+  --surface: #ffffff;
+  --ink: #12202c;
+  --muted: #566573;
+  --line: #d3dce4;
+  --accent: #0b6e8a;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcf0f6;
+  --good: #14733a;
+  --good-soft: #dcf3e4;
+  --bad: #b42318;
+  --bad-soft: #fde4e1;
+  --font-body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d151c; --surface: #15212b; --ink: #e6edf3; --muted: #9db0bf; --line: #2a3a47;
+    --accent: #4cc3e0; --accent-ink: #06222b; --accent-soft: #12333d;
+    --good: #5fd48a; --good-soft: #143325; --bad: #ff8a7d; --bad-soft: #3b1a17;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d151c; --surface: #15212b; --ink: #e6edf3; --muted: #9db0bf; --line: #2a3a47;
+  --accent: #4cc3e0; --accent-ink: #06222b; --accent-soft: #12333d;
+  --good: #5fd48a; --good-soft: #143325; --bad: #ff8a7d; --bad-soft: #3b1a17;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+h1 { font-size: 1.6rem; line-height: 1.2; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h2 { font-size: 1.15rem; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.label { font-family: var(--font-mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 12px 18px; font-weight: 600; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn:disabled { opacity: .5; cursor: default; }
+
+/* Home */
+.modes { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+.modes .btn { text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.modes .btn small { font-weight: 400; opacity: .85; }
+.sections { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.sections button { background: var(--surface); border: 0; border-bottom: 1px solid var(--line); padding: 12px 14px; display: flex; justify-content: space-between; gap: 12px; text-align: left; }
+.sections button:last-child { border-bottom: 0; }
+.sections button:hover { background: var(--accent-soft); }
+.sections .n { font-family: var(--font-mono); color: var(--muted); white-space: nowrap; }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opts label { display: flex; gap: 10px; align-items: center; }
+.opts input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+/* Quiz */
+.topbar { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); width: 0; }
+.timer { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.timer > i { display: block; height: 100%; background: var(--accent); width: 100%; }
+.timer.low > i { background: var(--bad); }
+.qtext { font-size: 1.1rem; font-weight: 600; line-height: 1.5; text-wrap: pretty; }
+.choices { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.choice { display: flex; gap: 12px; align-items: flex-start; text-align: left; width: 100%; background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.choice:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+.choice .k { font-family: var(--font-mono); font-weight: 700; width: 26px; height: 26px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; flex: none; }
+.choice span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.choice:disabled { cursor: default; }
+.choice.good { border-color: var(--good); background: var(--good-soft); }
+.choice.good .k { background: var(--good); color: var(--surface); }
+.choice.bad { border-color: var(--bad); background: var(--bad-soft); }
+.choice.bad .k { background: var(--bad); color: var(--surface); }
+.feedback { margin-top: 16px; border-radius: 8px; padding: 14px 16px; border: 1px solid var(--line); }
+.feedback.good { background: var(--good-soft); border-color: var(--good); }
+.feedback.bad { background: var(--bad-soft); border-color: var(--bad); }
+.feedback strong { display: block; margin-bottom: 4px; }
+.feedback.good strong { color: var(--good); }
+.feedback.bad strong { color: var(--bad); }
+.actions { display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; margin-top: 16px; }
+
+/* Result */
+.score { font-size: 3rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.wrong-list { display: flex; flex-direction: column; gap: 12px; }
+.wrong-item { border-top: 1px solid var(--line); padding-top: 12px; }
+.wrong-item .a { color: var(--good); font-weight: 600; }
+.wrong-item .e { color: var(--muted); font-size: 0.92rem; }
+@media (max-width: 520px) { .modes { grid-template-columns: 1fr; } h1 { font-size: 1.35rem; } .card { padding: 16px; } }
+@media (prefers-reduced-motion: no-preference) { .bar > i { transition: width .25s ease; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="label">Môn An toàn bảo mật thông tin</p>
+    <h1>Ôn tập Chương 1 và kiến thức mở rộng</h1>
+  </header>
+
+  <section id="home" class="card" style="display:flex;flex-direction:column;gap:18px">
+    <p class="muted">90 câu trắc nghiệm. Chọn đáp án là hiện kết quả đúng và giải thích ngay.</p>
+    <div class="modes">
+      <button class="btn" id="m-all"><span>Làm đủ 90 câu</span><small>Theo thứ tự bài giảng</small></button>
+      <button class="btn" id="m-rand"><span>Thi thử 80 câu</span><small>Ngẫu nhiên, trộn đáp án</small></button>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="o-timer"> Bấm giờ 30 giây mỗi câu</label>
+      <label><input type="checkbox" id="o-shuffle"> Trộn thứ tự câu và đáp án</label>
+    </div>
+    <div>
+      <p class="label" style="margin-bottom:8px">Hoặc ôn theo phần</p>
+      <div class="sections" id="sections"></div>
+    </div>
+    <p class="muted" style="font-size:.88rem">Lưu ý: phần pháp luật, tiêu chuẩn và vụ việc là kiến thức bổ sung, hãy đối chiếu với tài liệu của thầy. Nghị định về bảo vệ dữ liệu cá nhân ở đây là Nghị định 13/2023/NĐ-CP.</p>
+  </section>
+
+  <section id="quiz" hidden style="display:none;flex-direction:column;gap:12px">
+    <div class="topbar">
+      <span class="label" id="q-sec"></span>
+      <span class="label" id="q-count"></span>
+    </div>
+    <div class="bar"><i id="q-bar"></i></div>
+    <div class="timer" id="timer" hidden><i id="timer-i"></i></div>
+    <div class="card">
+      <p class="qtext" id="q-text"></p>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="feedback" hidden></div>
+      <div class="actions">
+        <button class="btn ghost" id="q-quit">Thoát</button>
+        <button class="btn" id="q-next" hidden>Câu tiếp</button>
+      </div>
+    </div>
+    <p class="muted" style="font-size:.84rem">Phím tắt: A–D hoặc 1–4 để chọn, Enter để sang câu tiếp.</p>
+  </section>
+
+  <section id="result" class="card" hidden style="display:none;flex-direction:column;gap:16px">
+    <p class="label">Kết quả</p>
+    <div class="score" id="r-score"></div>
+    <p id="r-msg" class="muted"></p>
+    <div class="actions" style="margin-top:0">
+      <button class="btn" id="r-retry">Làm lại các câu sai</button>
+      <button class="btn ghost" id="r-home">Về trang chọn</button>
+    </div>
+    <div id="r-wrong" class="wrong-list"></div>
+  </section>
+</div>
+
+<script>
+const SEC = ["Tình hình ATTT trong slide","Khái niệm cơ bản","Bí mật – Toàn vẹn – Sẵn dùng","4 thành phần của ATTT","7 vùng hạ tầng CNTT","Nguyên tắc đảm bảo ATTT","Bảo vệ dữ liệu cá nhân","Tiêu chuẩn bảo mật thế giới","Vụ rò rỉ nổi tiếng"];
+// [phần, câu hỏi, [4 đáp án], chỉ số đáp án đúng, giải thích]
+const Q = [
+[0,"Tháng 5/2023, Việt Nam xảy ra khoảng bao nhiêu cuộc tấn công mạng?",["Gần 70","Gần 700","Gần 7.000","Gần 70.000"],1,"Theo slide (BKAV): gần 700 cuộc tấn công mạng."],
+[0,"Thiệt hại do tội phạm mạng ở Việt Nam khoảng 883 triệu USD, tương đương bao nhiêu % GDP?",["0,024%","0,24%","1,18%","2,4%"],1,"883 triệu USD ≈ 0,24% GDP Việt Nam."],
+[0,"Thiệt hại toàn cầu khoảng 1000 tỷ USD/năm, tương đương bao nhiêu % GDP toàn cầu?",["0,24%","0,88%","1,18%","11,8%"],2,"1,18% GDP toàn cầu (NCSC, 2023)."],
+[0,"Ngày 29/7/2016, hai sân bay Nội Bài và Tân Sơn Nhất bị tấn công, ảnh hưởng hơn 100 chuyến bay và bao nhiêu thông tin cá nhân bị đánh cắp?",["41.100","141.000","411.000","4.110.000"],2,"411.000 thông tin cá nhân bị đánh cắp."],
+[0,"Năm 2017, hơn 1.900 máy tính tại Việt Nam bị nhiễm WannaCry. Đây là loại mã độc nào?",["Virus macro","Ransomware (mã hóa dữ liệu, đòi tiền chuộc)","Spyware","Adware"],1,"WannaCry mã hóa dữ liệu và đòi tiền chuộc, tức là ransomware."],
+[0,"Chị Nguyễn Thị Hà Thu (TP.HCM) mất hơn 2,1 tỷ đồng trong tài khoản tiết kiệm do chiêu lừa nào?",["Giả danh công an","Nâng cấp SIM","Mã độc Macro","DDoS"],1,"Chiêu lừa nâng cấp SIM (chiếm đoạt SIM để vượt xác thực OTP)."],
+[0,"Chị T.H. (Đà Nẵng) bị mất hơn 5 tỷ đồng do đối tượng nào?",["Giả danh nhân viên ngân hàng","Giả danh công an","Tin tặc tấn công hệ thống ngân hàng","Lây nhiễm ransomware"],1,"Giả danh công an, một dạng tấn công kỹ thuật xã hội (social engineering)."],
+[0,"Hơn 1,5 triệu máy tính người dùng Việt Nam bị lây nhiễm loại mã độc nào (theo slide)?",["Macro","Rootkit","Botnet","Logic bomb"],0,"Mã độc Macro. Cùng slide còn nêu 5,4 triệu khách hàng của TGDĐ."],
+[0,"Năm 2014 tại Hàn Quốc, bao nhiêu thông tin thẻ tín dụng bị đánh cắp?",["Hơn 10 triệu","Hơn 50 triệu","Hơn 100 triệu","Hơn 500 triệu"],2,"Hơn 100 triệu thông tin thẻ tín dụng."],
+[0,"Năm 2016, trang hẹn hò Tinder bị tấn công, bao nhiêu tài khoản bị đánh cắp thông tin nhạy cảm (theo slide)?",["4 triệu","40 triệu","400 triệu","4 tỷ"],2,"400 triệu tài khoản."],
+[0,"Hotel Marriott bị lộ thông tin của bao nhiêu khách hàng (theo slide, tháng 9/2018)?",["50 triệu","150 triệu","500 triệu","1 tỷ"],2,"500 triệu khách hàng."],
+[0,"Năm 2014, hacker Nga đánh cắp hơn bao nhiêu mật khẩu?",["1 triệu","100 triệu","1 tỷ","10 tỷ"],2,"Hơn 1 tỷ mật khẩu."],
+[0,"Lý do nào KHÔNG nằm trong danh sách “Tại sao cần đảm bảo an toàn cho thông tin, hệ thống và mạng”?",["Bảo vệ dữ liệu quan trọng","Ngăn chặn truy cập trái phép","Tăng tốc độ xử lý của hệ thống","Tuân thủ pháp luật và quy định"],2,"Slide nêu: bảo vệ dữ liệu, ngăn truy cập trái phép, đảm bảo toàn vẹn, duy trì hoạt động ổn định, tăng uy tín, giảm thiệt hại kinh tế, tuân thủ pháp luật. Không có “tăng tốc độ”."],
+[0,"Các mô hình kết nối (cộng đồng, thành phố, ngôi nhà thông minh, IoT, IoE) trong slide minh họa điều gì?",["Thế giới càng kết nối thì càng nhiều nguy cơ và đe dọa","IoT hoàn toàn an toàn","Chỉ doanh nghiệp lớn bị tấn công","Mạng LAN không còn cần thiết"],0,"Slide kết luận: thế giới kết nối với nhiều nguy cơ và đe dọa."],
+
+[1,"Nguy cơ/đe dọa mất ATTT nào KHÔNG được slide liệt kê?",["Tin tặc tấn công","Lạm dụng từ người dùng","Lỗi/khiếm khuyết phần cứng, phần mềm","Thời tiết nóng"],3,"Slide nêu: tin tặc, người dùng, mã độc, nghe trộm/đánh cắp/sửa đổi, lỗi phần cứng/phần mềm."],
+[1,"Định nghĩa “An toàn thông tin” là:",["Bảo vệ thông tin chống truy nhập, sử dụng, tiết lộ, sửa đổi hoặc phá hủy trái phép","Chỉ là cài phần mềm diệt virus","Chỉ là đặt mật khẩu mạnh","Sao lưu dữ liệu định kỳ"],0,"Bao gồm cả bảo vệ các thành phần/hệ thống dùng để quản lý, lưu trữ, xử lý, trao đổi thông tin."],
+[1,"“An toàn công nghệ thông tin (IT Security)” còn được gọi là gì?",["Information Assurance","Computer Security","Network Management","Risk Control"],1,"An toàn máy tính (Computer Security): ATTT áp dụng cho các hệ thống CNTT, bảo vệ khỏi tấn công mạng."],
+[1,"“Đảm bảo thông tin (Information Assurance)” tập trung vào điều gì?",["Ngăn hacker xâm nhập mạng","Đảm bảo thông tin không bị mất khi xảy ra sự cố (thiên tai, hỏng hóc, trộm cắp, phá hoại…)","Mã hóa đường truyền","Quản lý mật khẩu"],1,"Information Assurance là giữ cho thông tin không mất khi có sự cố."],
+[1,"Kỹ thuật thường dùng trong Information Assurance là:",["Firewall","Sao lưu dự phòng ngoại vi (offsite backup)","VPN","IDS"],1,"Offsite backup giúp khôi phục thông tin khi xảy ra sự cố tại nơi đặt hệ thống."],
+[1,"Hệ thống thông tin (IS) là:",["Hệ thống tích hợp các thành phần phục vụ thu thập, lưu trữ, xử lý và chuyển giao thông tin, tri thức, sản phẩm số","Chỉ là phần cứng máy tính","Chỉ là cơ sở dữ liệu","Chỉ là mạng Internet"],0,"IS là hệ thống tích hợp nhiều thành phần, không chỉ riêng phần cứng hay CSDL."],
+[1,"Năm thành phần của hệ thống thông tin dựa trên máy tính là:",["Hardware, Software, Databases, Networks, Procedures","Hardware, Software, Firewall, VPN, Users","CPU, RAM, Disk, Network, OS","Data, People, Policy, Process, Product"],0,"Phần cứng, phần mềm, cơ sở dữ liệu, mạng và thủ tục (procedures)."],
+[1,"Trong 5 thành phần của HTTT, “Procedures” là gì?",["Phần cứng thu thập dữ liệu","Hệ thống truyền dẫn dữ liệu","Tập hợp các lệnh/thủ tục kết hợp các bộ phận để xử lý dữ liệu, cho ra kết quả mong muốn","Nơi lưu trữ dữ liệu"],2,"Procedures là tập các lệnh/thủ tục kết hợp các bộ phận còn lại để xử lý dữ liệu."],
+[1,"“An toàn hệ thống thông tin (ISS)” là đảm bảo các thuộc tính nào?",["Bí mật – Toàn vẹn – Sẵn dùng","Xác thực – Ủy quyền – Kiểm toán","Nhanh – Rẻ – Tốt","Plan – Do – Check"],0,"Đó là ba thuộc tính CIA: Confidentiality, Integrity, Availability."],
+[1,"“Mối đe dọa (threat)” là:",["Điểm yếu trong hệ thống","Bất kỳ hành động nào có thể gây hư hại đến tài nguyên hệ thống","Tiềm năng bị khai thác lỗ hổng","Một loại phần mềm bảo mật"],1,"Mối đe dọa là hành động có thể gây hư hại đến tài nguyên hệ thống (phần cứng, phần mềm, CSDL, file, dữ liệu, hạ tầng mạng…)."],
+[1,"“Điểm yếu (weakness)” là:",["Khiếm khuyết/lỗi tồn tại trong hệ thống (phần cứng, phần mềm)","Hành động tấn công","Chính sách bảo mật","Dữ liệu bị mất"],0,"Điểm yếu là khiếm khuyết/lỗi tồn tại trong hệ thống: phần cứng hoặc phần mềm (HĐH và ứng dụng)."],
+[1,"“Lỗ hổng (vulnerability)” là:",["Mọi lỗi nhỏ của người dùng","Bất kỳ điểm yếu nào trong hệ thống cho phép mối đe dọa gây tác hại","Mã độc","Cuộc tấn công thành công"],1,"Lỗ hổng là điểm yếu cho phép mối đe dọa gây tác hại."],
+[1,"“Nguy cơ (risk)” là:",["Tiềm năng một mối đe dọa khai thác một lỗ hổng để tấn công hoặc gây nguy hiểm cho hệ thống","Hacker","Virus","Sự cố đã xảy ra"],0,"Nguy cơ xuất hiện khi có cả mối đe dọa và lỗ hổng bảo mật."],
+[1,"Điều nào đúng về quan hệ giữa mối đe dọa và lỗ hổng?",["Có thể triệt tiêu hoàn toàn mọi mối đe dọa","Không thể triệt tiêu hết mối đe dọa, nhưng có thể giảm lỗ hổng để giảm khả năng bị tấn công","Chỉ cần vá lỗ hổng là hết mọi nguy cơ vĩnh viễn","Lỗ hổng không liên quan đến mối đe dọa"],1,"Theo slide: không triệt tiêu hết được đe dọa, nhưng giảm được lỗ hổng."],
+[1,"Nếu hệ thống có lỗ hổng nhưng hoàn toàn không có mối đe dọa nào, kết luận nào đúng?",["Có nguy cơ rất cao","Chưa xuất hiện nguy cơ (cần cả đe dọa lẫn lỗ hổng)","Hệ thống an toàn tuyệt đối","Cần xóa hệ thống"],1,"Nguy cơ = đe dọa khai thác lỗ hổng; thiếu một trong hai thì chưa có nguy cơ (theo định nghĩa trong slide)."],
+[1,"Nhân viên bất mãn phá hoại dữ liệu là ví dụ của:",["Lỗ hổng","Mối đe dọa (từ vùng người dùng)","Điểm yếu phần cứng","Chính sách ATTT"],1,"Đây là hành động gây hại, tức là mối đe dọa."],
+[1,"Lỗi chưa được vá trong hệ điều hành là ví dụ của:",["Mối đe dọa","Lỗ hổng/điểm yếu phần mềm","Biện pháp bảo vệ","Nguy cơ đã được xử lý"],1,"Lỗi tồn tại trong phần mềm là điểm yếu/lỗ hổng."],
+[1,"Hacker khai thác lỗi chưa vá để đánh cắp dữ liệu. Phát biểu nào ĐÚNG?",["Hacker = mối đe dọa; lỗi chưa vá = lỗ hổng; khả năng bị khai thác = nguy cơ","Hacker = lỗ hổng","Lỗi chưa vá = mối đe dọa","Nguy cơ = hacker"],0,"Đe dọa là hành động/tác nhân, lỗ hổng là điểm yếu, nguy cơ là khả năng đe dọa khai thác lỗ hổng."],
+[1,"Tại sao “không tồn tại HTTT an toàn tuyệt đối”?",["Vì hacker luôn giỏi hơn","Hệ thống an toàn tuyệt đối thường là hệ thống đóng kín, ít hoặc không có giá trị sử dụng","Vì phần mềm luôn có virus","Vì không có tiêu chuẩn"],1,"Theo slide, hệ thống an toàn tuyệt đối thường đóng kín và ít hoặc không có giá trị sử dụng."],
+[1,"Cần cân bằng ba yếu tố nào khi thiết kế bảo mật?",["Usability – Cost – Security","Speed – Size – Style","Confidentiality – Cost – Time","Policy – People – Product"],0,"Tính hữu dụng (Usability), chi phí (Cost) và an toàn (Security)."],
+
+[2,"Tính bí mật (Confidentiality) nghĩa là:",["Thông tin luôn truy cập được","Chỉ người dùng có thẩm quyền mới được truy nhập thông tin","Thông tin không bị sửa đổi","Thông tin được sao lưu"],1,"Confidentiality: chỉ người có thẩm quyền mới truy nhập được thông tin."],
+[2,"Loại thông tin nào KHÔNG thuộc nhóm “thông tin bí mật” trong slide?",["Dữ liệu riêng của cá nhân","Thông tin sở hữu trí tuệ của doanh nghiệp","Thông tin liên quan đến an ninh quốc gia","Thông báo công khai trên website"],3,"Thông tin công khai thì không cần giữ bí mật."],
+[2,"Slide nêu công cụ nào đảm bảo tính bí mật?",["Kênh mã hóa VPN","Sao lưu offsite","Cân bằng tải","Uptime monitor"],0,"Tính bí mật có thể được đảm bảo bằng kênh mã hóa VPN."],
+[2,"Tính toàn vẹn (Integrity) là:",["Chỉ người có thẩm quyền được xem","Thông tin chỉ được sửa đổi bởi người dùng có thẩm quyền","Hệ thống luôn online","Dữ liệu được mã hóa"],1,"Integrity liên quan đến việc ai được sửa đổi thông tin, cùng tính hợp lệ và chính xác của dữ liệu."],
+[2,"Dữ liệu được coi là toàn vẹn khi:",["Không bị thay đổi, hợp lệ, chính xác","Được nén","Được sao lưu 3 bản","Được mã hóa AES"],0,"Ba điều kiện theo slide: không bị thay đổi, hợp lệ, chính xác."],
+[2,"Hacker sửa số dư tài khoản trong cơ sở dữ liệu. Thuộc tính nào bị vi phạm chính?",["Confidentiality","Integrity","Availability","Không thuộc tính nào"],1,"Dữ liệu bị sửa đổi trái phép, vi phạm tính toàn vẹn."],
+[2,"Bị lộ danh sách 411.000 thông tin cá nhân khách hàng vi phạm chính thuộc tính nào?",["Confidentiality","Integrity","Availability","Accountability"],0,"Người không có thẩm quyền đã đọc được dữ liệu, vi phạm tính bí mật."],
+[2,"Tấn công DDoS làm website ngân hàng không truy cập được vi phạm thuộc tính nào?",["Confidentiality","Integrity","Availability","Non-repudiation"],2,"Người dùng hợp pháp không truy cập được khi cần, vi phạm tính sẵn dùng."],
+[2,"Tính sẵn dùng (Availability) là:",["Thông tin có thể truy nhập bởi người dùng hợp pháp bất cứ khi nào họ có yêu cầu","Chỉ admin mới truy cập","Thông tin không thay đổi","Dữ liệu đã mã hóa"],0,"Availability: người dùng hợp pháp truy nhập được bất cứ khi nào cần."],
+[2,"Công thức tính tỷ lệ phục vụ (tính sẵn dùng) là:",["A = Downtime / Uptime","A = Uptime / (Uptime + Downtime)","A = Uptime − Downtime","A = (Uptime + Downtime) / Uptime"],1,"A = Uptime / (Uptime + Downtime)."],
+[2,"Hệ thống chạy 990 giờ, ngừng 10 giờ. Tính sẵn dùng là:",["90%","98%","99%","99,9%"],2,"A = 990 / (990 + 10) = 0,99 = 99%."],
+[2,"Tính sẵn dùng 99,9%/năm tương đương thời gian ngừng tối đa khoảng:",["8,76 giờ","87,6 giờ","52 phút","3,65 ngày"],0,"0,1% × 8.760 giờ ≈ 8,76 giờ. (99,99% ≈ 52,6 phút.)"],
+[2,"Chỉ số nào KHÔNG dùng để đo tính sẵn dùng theo slide?",["Thời gian trung bình giữa các sự cố","Thời gian trung bình ngừng để sửa chữa","Thời gian khôi phục sau sự cố","Số lượng người dùng đăng ký"],3,"Slide nêu: Uptime, Downtime, tỷ lệ phục vụ, thời gian giữa các sự cố, thời gian ngừng để sửa, thời gian khôi phục."],
+[2,"Ransomware mã hóa dữ liệu, người dùng không mở được file. Thuộc tính bị ảnh hưởng chủ yếu là:",["Availability (và có thể cả Confidentiality nếu dữ liệu bị đánh cắp)","Chỉ Integrity","Không ảnh hưởng","Chỉ Non-repudiation"],0,"Dữ liệu không dùng được là mất tính sẵn dùng; nếu kẻ tấn công còn lấy cắp dữ liệu thì mất cả tính bí mật."],
+
+[3,"Bốn thành phần của ATTT là:",["An toàn máy tính & dữ liệu; An ninh mạng; Quản lý ATTT; Chính sách ATTT","Phần cứng; Phần mềm; Mạng; Con người","Bí mật; Toàn vẹn; Sẵn dùng; Xác thực","Vật lý; Tổ chức; Logic; Kỹ thuật"],0,"Theo mục 1.3 của slide."],
+[3,"Nội dung nào KHÔNG thuộc “An toàn máy tính và dữ liệu”?",["An toàn hệ điều hành","Điều khiển truy cập","Phát hiện/ngăn chặn xâm nhập IDS/IPS","Sao lưu tạo dự phòng dữ liệu"],2,"IDS/IPS thuộc An ninh mạng."],
+[3,"Nội dung nào thuộc “An ninh mạng”?",["Tường lửa, VPN, bảo mật dữ liệu truyền, IDS/IPS, giám sát mạng","Đào tạo người dùng","Quản lý rủi ro","Mã hóa tập tin cục bộ"],0,"An ninh mạng gồm firewall, VPN, bảo mật dữ liệu truyền, IPS/IDS, giám sát mạng."],
+[3,"Nội dung nào thuộc “Quản lý ATTT”?",["Quản lý rủi ro, các chuẩn ATTT, chính sách ATTT, đào tạo người dùng","Firewall","Antivirus","Backup"],0,"Quản lý ATTT gồm quản lý rủi ro, chuẩn ATTT, chính sách và đào tạo người dùng."],
+[3,"Chu trình của Hệ thống quản lý ATTT (ISMS) là:",["Plan – Do – Check – Act","Identify – Protect – Detect – Respond","Prevent – Detect – Respond","Analyze – Design – Build – Test"],0,"PDCA: Plan – Do – Check – Act."],
+[3,"ISMS là viết tắt của:",["Information Security Management System","Internet Security Monitoring System","Integrated Software Management System","Information System Maintenance Standard"],0,"Hệ thống quản lý an toàn thông tin."],
+[3,"Ba mức chính sách ATTT là:",["Vật lý – Tổ chức – Logic","Cao – Trung bình – Thấp","Mạng – Máy chủ – Ứng dụng","Kỹ thuật – Pháp lý – Đạo đức"],0,"Physical, Organisational, Logical security policy."],
+[3,"Việc dùng khóa cửa phòng máy chủ, camera giám sát thuộc chính sách mức nào?",["Vật lý","Tổ chức","Logic","Pháp lý"],0,"Bảo vệ về mặt vật lý là chính sách mức vật lý."],
+[3,"Quy định phân quyền tài khoản, độ dài mật khẩu thuộc chính sách mức nào?",["Vật lý","Logic","Tổ chức","Không thuộc mức nào"],1,"Mức logic liên quan đến hệ thống, dữ liệu, truy cập."],
+[3,"Quy định về vai trò, trách nhiệm, quy trình xử lý sự cố của nhân sự là chính sách mức:",["Vật lý","Logic","Tổ chức","Mạng"],2,"Mức tổ chức nói về con người, vai trò, trách nhiệm và quy trình."],
+[3,"Slide đề cập áp dụng chính sách xác thực “mạnh” bằng:",["Mật khẩu 4 ký tự","Đặc điểm sinh trắc (Biometric) thay cho mật khẩu truyền thống","Câu hỏi bảo mật","Email xác nhận"],1,"Xác thực mạnh dùng đặc điểm sinh trắc thay cho mật khẩu truyền thống."],
+[3,"Firewall (tường lửa) có vai trò chính là:",["Lọc/kiểm soát lưu lượng mạng theo quy tắc","Mã hóa ổ đĩa","Sao lưu","Diệt virus trên máy trạm"],0,"Firewall kiểm soát lưu lượng vào/ra mạng theo các quy tắc."],
+[3,"Phân biệt IDS và IPS:",["IDS phát hiện và cảnh báo xâm nhập; IPS phát hiện và chủ động ngăn chặn","IDS ngăn chặn; IPS chỉ cảnh báo","Hai thuật ngữ như nhau","IDS là phần cứng, IPS là phần mềm"],0,"Detection (phát hiện) khác Prevention (ngăn chặn)."],
+[3,"VPN giúp:",["Tạo kênh truyền mã hóa qua mạng công cộng, đảm bảo tính bí mật dữ liệu truyền","Tăng tốc Internet","Diệt virus","Sao lưu"],0,"VPN tạo kênh mã hóa, bảo vệ tính bí mật của dữ liệu truyền."],
+
+[4,"Bảy vùng trong cơ sở hạ tầng CNTT gồm:",["User, Workstation, LAN, LAN-to-WAN, WAN, Remote Access, Systems/Applications","User, Server, LAN, WAN, Cloud, IoT, Mobile","Physical, Network, Transport, Session, Presentation, Application, Data","Input, Process, Output, Storage, Network, User, Admin"],0,"Theo mục 1.4.1 của slide."],
+[4,"“Thiếu ý thức về an ninh, coi nhẹ chính sách, cắm USB cá nhân vào hệ thống” là đe dọa ở vùng nào?",["Workstation","User","WAN","LAN"],1,"Vùng người dùng: con người thường là mắt xích yếu."],
+[4,"“Lỗ hổng HĐH máy trạm, virus/mã độc, truy nhập trái phép vào máy trạm” thuộc vùng:",["User","Workstation","LAN-to-WAN","Remote Access"],1,"Đặc trưng của vùng máy trạm."],
+[4,"“Nguy cơ từ người dùng giả mạo trong mạng WLAN; chuẩn cấu hình máy chủ LAN chưa tuân thủ” thuộc vùng:",["LAN","WAN","User","Systems/Applications"],0,"Đặc trưng của vùng mạng LAN."],
+[4,"“Thăm dò và rà quét trái phép các cổng dịch vụ; lỗ hổng trong router, firewall” thuộc vùng:",["LAN","LAN-to-WAN","WAN","Workstation"],1,"Vùng biên giữa mạng nội bộ và Internet."],
+[4,"“Dữ liệu truyền dạng rõ (cleartext), dễ bị nghe trộm, DoS/DDoS, gửi email đính kèm virus” thuộc vùng:",["WAN","LAN","User","Remote Access"],0,"WAN là môi trường công cộng và mở."],
+[4,"“Tấn công vét cạn (brute force) tên người dùng/mật khẩu” là đe dọa tiêu biểu ở vùng:",["User","Remote Access","LAN","Workstation"],1,"Vùng truy nhập từ xa."],
+[4,"“Truy nhập trái phép trung tâm dữ liệu, phòng máy, tủ cáp; vấn đề an ninh môi trường ảo của điện toán đám mây; hỏng hóc/mất dữ liệu” thuộc vùng:",["Systems/Applications","User","WAN","LAN-to-WAN"],0,"Đặc trưng của vùng hệ thống/ứng dụng."],
+[4,"Vùng nào có rủi ro “dữ liệu rò rỉ do vi phạm tiêu chuẩn phân loại dữ liệu, thông tin bí mật bị đánh cắp từ xa”?",["Remote Access","User","LAN","Workstation"],0,"Đặc trưng của vùng truy nhập từ xa."],
+[4,"Nhân viên tải ảnh, nhạc, video trái phép là vi phạm tiêu biểu ở vùng:",["User (và Workstation)","WAN","Systems/Applications","LAN-to-WAN"],0,"Slide nêu ở cả vùng người dùng và vùng máy trạm."],
+[4,"Brute force là kiểu tấn công:",["Thử lần lượt rất nhiều tổ hợp tên/mật khẩu cho đến khi đúng","Gửi email lừa đảo","Nghe lén gói tin","Chiếm phiên đăng nhập"],0,"Brute force (vét cạn) thử mọi tổ hợp có thể."],
+[4,"Tại sao dữ liệu ở vùng WAN dễ bị nghe trộm?",["Vì phần lớn truyền dưới dạng rõ (cleartext/plaintext) trong môi trường công cộng, mở","Vì WAN luôn có firewall","Vì WAN không có người dùng","Vì WAN dùng VPN mặc định"],0,"Dữ liệu truyền dạng rõ trong môi trường công cộng nên dễ bị nghe trộm."],
+
+[5,"Nguyên tắc “Defence in Depth” là:",["Dùng một công cụ bảo vệ mạnh nhất","Tạo nhiều lớp bảo vệ, kết hợp tác dụng của từng lớp","Chỉ bảo vệ vùng biên","Chỉ đào tạo người dùng"],1,"Phòng vệ nhiều lớp có chiều sâu; một lớp riêng rẽ thường không đảm bảo an toàn."],
+[5,"Ví dụ nào thể hiện Defence in Depth?",["Firewall + IDS/IPS + antivirus + phân quyền + mã hóa + backup + đào tạo nhân viên","Chỉ dùng antivirus rất mạnh","Đặt mật khẩu dài rồi bỏ qua mọi biện pháp khác","Tắt hết mạng"],0,"Kết hợp nhiều lớp biện pháp khác nhau."],
+[5,"Nếu tăng bảo mật lên cực cao (khóa mọi thứ), hệ quả thường gặp là:",["Giảm tính hữu dụng và tăng chi phí","Tăng tính hữu dụng","Giảm chi phí","Không đổi"],0,"Vì vậy cần cân bằng Usability – Cost – Security."],
+[5,"Phát biểu nào SAI?",["Con người là một mắt xích quan trọng trong ATTT","Có thể đạt hệ thống an toàn tuyệt đối mà vẫn dùng bình thường","Cần kết hợp biện pháp kỹ thuật, quản lý và chính sách","Nên phòng vệ nhiều lớp"],1,"Không tồn tại HTTT an toàn tuyệt đối vẫn dùng được bình thường."],
+
+[6,"Nghị định 13/2023/NĐ-CP có hiệu lực từ ngày nào?",["01/01/2023","17/4/2023","01/7/2023","01/01/2026"],2,"Ban hành 17/4/2023, có hiệu lực 01/7/2023."],
+[6,"Dữ liệu cá nhân nào sau đây là dữ liệu cá nhân NHẠY CẢM?",["Họ tên","Ngày sinh","Tình trạng sức khỏe, đặc điểm sinh trắc học, quan điểm chính trị/tôn giáo","Số điện thoại"],2,"Dữ liệu nhạy cảm còn gồm: chủng tộc/dân tộc, đặc điểm di truyền, đời sống/xu hướng tính dục, dữ liệu tội phạm, thông tin khách hàng của ngân hàng/tổ chức tín dụng, dữ liệu vị trí…"],
+[6,"Quyền nào KHÔNG thuộc quyền của chủ thể dữ liệu?",["Quyền được biết, đồng ý, truy cập","Quyền yêu cầu xóa, hạn chế xử lý, phản đối","Quyền khiếu nại, tố cáo, khởi kiện, yêu cầu bồi thường","Quyền tự do mua bán dữ liệu của người khác"],3,"Nghị định 13 quy định 11 quyền của chủ thể dữ liệu về chính dữ liệu của mình."],
+[6,"Theo Nghị định 13, sự im lặng hoặc không phản hồi của chủ thể dữ liệu được coi là:",["Đồng ý","Không được coi là đồng ý (sự đồng ý phải rõ ràng, cụ thể, tự nguyện, có thể kiểm chứng)","Đồng ý một phần","Tùy doanh nghiệp"],1,"Sự đồng ý phải thể hiện rõ ràng, tự nguyện; im lặng không phải đồng ý."],
+[6,"Khi xảy ra vi phạm quy định bảo vệ dữ liệu cá nhân, bên kiểm soát/xử lý phải thông báo cho Bộ Công an (cơ quan chuyên trách) trong vòng:",["24 giờ","72 giờ","7 ngày","30 ngày"],1,"72 giờ kể từ khi phát hiện vi phạm."],
+[6,"Cơ quan chuyên trách bảo vệ dữ liệu cá nhân theo Nghị định 13 là:",["Bộ Thông tin và Truyền thông","Cục An ninh mạng và phòng, chống tội phạm sử dụng công nghệ cao (A05), Bộ Công an","Ngân hàng Nhà nước","Bộ Tư pháp"],1,"Cơ quan chuyên trách là A05, Bộ Công an."],
+
+[7,"Tiêu chuẩn nào quy định yêu cầu xây dựng, vận hành và cải tiến Hệ thống quản lý ATTT (ISMS) và có thể được chứng nhận?",["ISO/IEC 27001","ISO 9001","ISO/IEC 27002","ISO 14001"],0,"ISO/IEC 27002 là hướng dẫn các biện pháp kiểm soát, không dùng để chứng nhận."],
+[7,"Tiêu chuẩn bảo mật dành riêng cho dữ liệu thẻ thanh toán là:",["HIPAA","PCI DSS","GDPR","SOX"],1,"PCI DSS: Payment Card Industry Data Security Standard."],
+[7,"GDPR là quy định bảo vệ dữ liệu của khu vực nào, và hiệu lực từ khi nào?",["Hoa Kỳ, 2010","Liên minh châu Âu (EU), 25/5/2018","Nhật Bản, 2015","Việt Nam, 2023"],1,"GDPR phạt tối đa 20 triệu EUR hoặc 4% doanh thu toàn cầu (mức nào cao hơn); yêu cầu thông báo vi phạm trong 72 giờ."],
+[7,"Khung NIST Cybersecurity Framework (CSF) ban đầu có 5 chức năng là:",["Identify – Protect – Detect – Respond – Recover","Plan – Do – Check – Act – Review","Prevent – Audit – Fix – Test – Deploy","Confidentiality – Integrity – Availability – Authenticity – Accountability"],0,"Nhận diện, bảo vệ, phát hiện, ứng phó, khôi phục. (Phiên bản 2.0 bổ sung chức năng Govern.)"],
+
+[8,"Vụ Equifax (2017) làm lộ dữ liệu khoảng 147 triệu người. Nguyên nhân kỹ thuật chính là:",["Không vá lỗ hổng đã biết trong Apache Struts","Nhân viên bị lừa chuyển tiền","DDoS","Mất ổ cứng"],0,"Bài học: quản lý bản vá (patch management)."],
+[8,"Vụ Target (2013) bị đánh cắp khoảng 40 triệu thẻ thanh toán. Hacker xâm nhập ban đầu thông qua:",["Thông tin đăng nhập của nhà thầu bên thứ ba (hệ thống điều hòa HVAC)","Tấn công vật lý vào cửa hàng","Lỗi Heartbleed","Ransomware"],0,"Bài học: rủi ro chuỗi cung ứng/bên thứ ba."]
+];
+
+const $ = id => document.getElementById(id);
+const screens = { home: $("home"), quiz: $("quiz"), result: $("result") };
+let S = null;
+
+function show(name) {
+  for (const k in screens) { const on = k === name; screens[k].hidden = !on; screens[k].style.display = on ? "flex" : "none"; }
+  window.scrollTo(0, 0);
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function buildHome() {
+  const box = $("sections"); box.innerHTML = "";
+  SEC.forEach((name, i) => {
+    const n = Q.filter(q => q[0] === i).length;
+    const b = document.createElement("button");
+    b.innerHTML = "<span></span><span class='n'>" + n + " câu</span>";
+    b.firstChild.textContent = name;
+    b.onclick = () => start(Q.map((q, k) => k).filter(k => Q[k][0] === i), $("o-shuffle").checked);
+    box.appendChild(b);
+  });
+}
+
+function start(idxs, doShuffle) {
+  const order = doShuffle ? shuffle(idxs) : idxs;
+  S = { items: order.map(k => ({ k, perm: doShuffle ? shuffle([0,1,2,3]) : [0,1,2,3] })), i: 0, score: 0, wrong: [], locked: false, timer: null, tOn: $("o-timer").checked };
+  show("quiz");
+  render();
+}
+
+function render() {
+  const it = S.items[S.i], q = Q[it.k];
+  S.locked = false;
+  $("q-sec").textContent = SEC[q[0]];
+  $("q-count").textContent = "Câu " + (S.i + 1) + " / " + S.items.length + " · Đúng " + S.score;
+  $("q-bar").style.width = (S.i / S.items.length * 100) + "%";
+  $("q-text").textContent = q[1];
+  const ch = $("choices"); ch.innerHTML = "";
+  it.perm.forEach((orig, pos) => {
+    const b = document.createElement("button");
+    b.className = "choice"; b.dataset.orig = orig;
+    b.innerHTML = "<span class='k'>" + "ABCD"[pos] + "</span><span></span>";
+    b.lastChild.textContent = q[2][orig];
+    b.onclick = () => choose(pos);
+    ch.appendChild(b);
+  });
+  $("feedback").hidden = true;
+  $("q-next").hidden = true;
+  const t = $("timer");
+  t.hidden = !S.tOn;
+  clearInterval(S.timer);
+  if (S.tOn) {
+    const start = Date.now(), total = 30000;
+    t.classList.remove("low"); $("timer-i").style.width = "100%";
+    S.timer = setInterval(() => {
+      const left = Math.max(0, total - (Date.now() - start));
+      $("timer-i").style.width = (left / total * 100) + "%";
+      t.classList.toggle("low", left < 8000);
+      if (left <= 0) { clearInterval(S.timer); choose(-1); }
+    }, 100);
+  }
+}
+
+function choose(pos) {
+  if (S.locked) return;
+  S.locked = true; clearInterval(S.timer);
+  const it = S.items[S.i], q = Q[it.k], btns = [...$("choices").children];
+  const chosenOrig = pos >= 0 ? it.perm[pos] : -1;
+  const ok = chosenOrig === q[3];
+  btns.forEach((b, p) => {
+    b.disabled = true;
+    if (it.perm[p] === q[3]) b.classList.add("good");
+    else if (p === pos) b.classList.add("bad");
+  });
+  if (ok) S.score++; else S.wrong.push(it.k);
+  const letter = "ABCD"[it.perm.indexOf(q[3])];
+  const fb = $("feedback");
+  fb.className = "feedback " + (ok ? "good" : "bad");
+  fb.innerHTML = "<strong></strong><span></span>";
+  fb.firstChild.textContent = ok ? "Chính xác" : (pos < 0 ? "Hết giờ. Đáp án đúng: " + letter : "Chưa đúng. Đáp án đúng: " + letter);
+  fb.lastChild.textContent = q[4];
+  fb.hidden = false;
+  $("q-count").textContent = "Câu " + (S.i + 1) + " / " + S.items.length + " · Đúng " + S.score;
+  const nx = $("q-next");
+  nx.textContent = S.i + 1 < S.items.length ? "Câu tiếp" : "Xem kết quả";
+  nx.hidden = false; nx.focus({ preventScroll: true });
+}
+
+function next() {
+  if (S.i + 1 < S.items.length) { S.i++; render(); } else finish();
+}
+
+function finish() {
+  clearInterval(S.timer);
+  const n = S.items.length, pct = Math.round(S.score / n * 100);
+  $("r-score").textContent = S.score + " / " + n;
+  $("r-msg").textContent = pct + "% đúng. " + (pct >= 85 ? "Rất vững, giữ phong độ." : pct >= 65 ? "Khá ổn, xem lại các câu sai bên dưới." : "Nên đọc lại slide rồi làm lại các câu sai.");
+  $("r-retry").hidden = S.wrong.length === 0;
+  const box = $("r-wrong"); box.innerHTML = "";
+  S.wrong.forEach(k => {
+    const q = Q[k], d = document.createElement("div");
+    d.className = "wrong-item";
+    d.innerHTML = "<p class='label'></p><p><strong class='t'></strong></p><p class='a'></p><p class='e'></p>";
+    d.children[0].textContent = SEC[q[0]];
+    d.querySelector(".t").textContent = q[1];
+    d.querySelector(".a").textContent = "Đáp án đúng: " + q[2][q[3]];
+    d.querySelector(".e").textContent = q[4];
+    box.appendChild(d);
+  });
+  show("result");
+}
+
+$("m-all").onclick = () => start(Q.map((q, k) => k), $("o-shuffle").checked);
+$("m-rand").onclick = () => start(shuffle(Q.map((q, k) => k)).slice(0, 80), true);
+$("q-next").onclick = next;
+$("q-quit").onclick = () => { clearInterval(S && S.timer); show("home"); };
+$("r-home").onclick = () => show("home");
+$("r-retry").onclick = () => start(S.wrong.slice(), $("o-shuffle").checked);
+document.addEventListener("keydown", e => {
+  if (screens.quiz.hidden) return;
+  const k = e.key.toLowerCase();
+  const map = { a: 0, b: 1, c: 2, d: 3, "1": 0, "2": 1, "3": 2, "4": 3 };
+  if (k in map && !S.locked) choose(map[k]);
+  else if (k === "enter" && S.locked && e.target.id !== "q-next") { e.preventDefault(); next(); }
+});
+
+buildHome();
+show("home");
+</script>
+
+</body></html>
